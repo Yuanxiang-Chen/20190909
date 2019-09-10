@@ -1,7 +1,12 @@
+/*
+ * @Author: Antoine YANG 
+ * @Date: 2019-09-10 10:38:05 
+ * @Last Modified by: Antoine YANG
+ * @Last Modified time: 2019-09-10 11:37:05
+ */
 import React, { Component } from 'react';
 import './bootstrap.css';
 import './style.css';
-import $ from 'jquery';
 
 export interface EmotionBarProps {}
 
@@ -39,6 +44,17 @@ class EmotionBar extends Component<EmotionBarProps, EmotionBarState, any> {
                             stroke: 'none'
                         }}
                     />
+                    <text
+                        xmlns={`http://www.w3.org/2000/svg`}
+                        x={1159 * this.state.data + 57} y={ 20 }
+                        textAnchor={'middle'}
+                        style={{
+                            fill: 'black',
+                            fontSize: 13
+                        }}
+                        >
+                        { this.state.data }
+                    </text>
                 </svg>
             );
         }

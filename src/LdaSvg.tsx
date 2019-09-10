@@ -1,3 +1,9 @@
+/*
+ * @Author: Antoine YANG 
+ * @Date: 2019-09-10 10:38:37 
+ * @Last Modified by: Antoine YANG
+ * @Last Modified time: 2019-09-10 10:51:16
+ */
 import React, { Component } from 'react';
 import './bootstrap.css';
 import './style.css';
@@ -102,7 +108,7 @@ class LdaSvg extends Component<LdaSvgProps, LdaSvgState, any> {
                                         xmlns={`http://www.w3.org/2000/svg`}
                                         id={`lda_icon_${index}`} className={`lda_stack_label`}
                                         x={44} y={(21 * Math.sqrt(20 / this.state.groups)) * index + 24}
-                                        textAnchor={'left'} dy={'0.4em'}
+                                        textAnchor={'start'} dy={'0.4em'}
                                         style={{
                                             fontSize: 13 * Math.sqrt(20 / this.state.groups),
                                             fill: 'dark'

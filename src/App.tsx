@@ -1,3 +1,9 @@
+/*
+ * @Author: Antoine YANG 
+ * @Date: 2019-09-10 10:38:15 
+ * @Last Modified by: Antoine YANG
+ * @Last Modified time: 2019-09-10 12:03:57
+ */
 import React, { ChangeEvent } from 'react';
 import './bootstrap.css';
 import './style.css';
@@ -5,6 +11,7 @@ import Textbox from './textbox';
 import Selector from './Selector';
 import LdaSvg from './LdaSvg';
 import EmotionBar from './EmotionBar';
+import Cloud, {CloudRefresh} from './Cloud';
 
 
 let changeSelect: (event: ChangeEvent<HTMLSelectElement>) => void
@@ -77,7 +84,13 @@ const App: React.FC = () => {
           <div className="panell-heading">
               KeyWordCloud
           </div>
-          <div id="cloud1" style={{height: '230px', width: '420px'}}></div>
+          <div id="cloud1" style={{height: '230px', width: '420px'}}>
+              <button type="button" style={{position: 'relative', padding: '0px 5px', top: '-28px'}}
+                    onClick={event => {CloudRefresh()}}>
+                R
+              </button>
+              <Cloud />
+          </div>
       </div>
       <div id="emotion">
           <div className="panell-heading">
