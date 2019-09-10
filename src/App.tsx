@@ -25,8 +25,8 @@ export var run: (year: number, source: Source, topic_amount: number) => void
             = new Promise<{}>((resolve: (value?: {} | PromiseLike<{}> | undefined) => void, reject: (reason?: any) => void) => {
                 // 发送异步请求
                 $.ajax({
-                    type: "get",
-                    url: "/",
+                    type: "POST",
+                    url: "/Python/Lda.py",
                     data: {year, source, topic_amount},
                     dataType: "json",
                     success: data => {
