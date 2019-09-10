@@ -2,11 +2,12 @@
  * @Author: Antoine YANG 
  * @Date: 2019-09-10 10:38:02 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-09-10 12:02:46
+ * @Last Modified time: 2019-09-10 13:26:57
  */
 import React, { Component } from 'react';
 import './bootstrap.css';
 import './style.css';
+import $ from 'jquery';
 
 export interface CloudProps {}
 
@@ -39,14 +40,15 @@ class Cloud extends Component<CloudProps, CloudState, any> {
             return a.value - b.value;
         });
         return (
-            <svg width={420} height={230} id={'wordcloud'} xmlns={`http://www.w3.org/2000/svg`}>
+            <svg width={420} height={230} id={'wordcloud'} xmlns={`http://www.w3.org/2000/svg`}
+            style={{position: 'relative', top: '-20px'}}>
                 {
                     words.map((item, index) => {
-                        let size: number = item.value / maxvalue * 20 + 20;
+                        let size: number = item.value / maxvalue * 16 + 20;
                         let width: number = 408 - size * item.text.length * 1.1;
                         let height: number = 218 - size * 1.3;
-                        let _x: number = Math.random() * width + size * item.text.length * 0.55;
-                        let _y: number = Math.random() * height + size * 0.65;
+                        let _x: number = Math.random() * width + size * item.text.length * 0.55 + 6;
+                        let _y: number = Math.random() * height + size * 0.65 + 6;
                         if (index !== 0 && Math.sqrt(Math.pow(_x - 210, 2) + Math.pow(_y - 115, 2)) < Math.sqrt(index) * 10) {
                             _x = _x < 210 ? _x - index * 100 : _x + index * 100;
                             _y = _y < 115 ? _y - index * 24 : _y + index * 24;
@@ -71,6 +73,11 @@ class Cloud extends Component<CloudProps, CloudState, any> {
     }
 
     public componentDidMount(): void {
+        $('*').keydown(function(event){
+            if (event.which === 82) {
+                CloudRefresh();
+            }
+        });
         CloudRefresh = () => {
             this.setState({
                 words: this.state.words

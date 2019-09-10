@@ -2,20 +2,49 @@
  * @Author: Antoine YANG 
  * @Date: 2019-09-10 10:38:15 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-09-10 12:03:57
+ * @Last Modified time: 2019-09-10 17:31:38
  */
 import React, { ChangeEvent } from 'react';
 import './bootstrap.css';
 import './style.css';
 import Textbox from './textbox';
 import Selector from './Selector';
-import LdaSvg from './LdaSvg';
+import LdaSvg, { Source } from './LdaSvg';
 import EmotionBar from './EmotionBar';
 import Cloud, {CloudRefresh} from './Cloud';
+import Distribution from './Distribution';
+import $ from 'jquery';
 
 
 let changeSelect: (event: ChangeEvent<HTMLSelectElement>) => void
-  = event => {};
+    = event => {};
+
+export var run: (year: number, source: Source, topic_amount: number) => void
+    = (year: number, source: Source, topic_amount: number) => {
+        let p: Promise<{}>
+            = new Promise<{}>((resolve: (value?: {} | PromiseLike<{}> | undefined) => void, reject: (reason?: any) => void) => {
+                // 发送异步请求
+                $.ajax({
+                    type: "get",
+                    url: "/",
+                    data: {year, source, topic_amount},
+                    dataType: "json",
+                    success: data => {
+                        resolve(data);
+                    },
+                    error: msg => {
+                        reject(msg);
+                    }
+                });
+            });
+        p.then((value: {}) => {
+            console.log("then()", value);
+        }).catch((reason: any) => {
+            console.error(reason);
+        });
+    };
+
+run(2018, Source.市建委, 5);
 
 const App: React.FC = () => {
   return (
@@ -31,7 +60,7 @@ const App: React.FC = () => {
                   </h1>
               </div>
               <div>
-                  <select id="Year"  style={{width: '50px', marginLeft: '10px', marginTop: '0px'}}>
+                  <select id="Year" style={{width: '50px', marginLeft: '10px', marginTop: '0px'}}>
                           <option value="0">选择数据</option>
                           <option value="1" id="year2016">2016</option>
                           <option value="2" id="year2017">2017</option>
@@ -85,7 +114,7 @@ const App: React.FC = () => {
               KeyWordCloud
           </div>
           <div id="cloud1" style={{height: '230px', width: '420px'}}>
-              <button type="button" style={{position: 'relative', padding: '0px 5px', top: '-28px'}}
+              <button type="button" style={{position: 'relative', padding: '0px 5px', top: '-27px', left: '386px'}}
                     onClick={event => {CloudRefresh()}}>
                 R
               </button>
@@ -96,7 +125,9 @@ const App: React.FC = () => {
           <div className="panell-heading">
               All
           </div>
-          <div id="Emo" style={{height: '230px', width: '420px'}}></div>
+          <div id="Emo" style={{height: '230px', width: '420px'}}>
+              <Distribution />
+          </div>
       </div>
       <div id="extra">
         <div className="panell-heading">

@@ -2,7 +2,7 @@
  * @Author: Antoine YANG 
  * @Date: 2019-09-10 10:38:37 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-09-10 10:51:16
+ * @Last Modified time: 2019-09-10 16:40:55
  */
 import React, { Component } from 'react';
 import './bootstrap.css';
@@ -114,7 +114,7 @@ class LdaSvg extends Component<LdaSvgProps, LdaSvgState, any> {
                                             fill: 'dark'
                                         }}
                                     >
-                                        {`主题 ${index}`}
+                                        {`主题 ${ index + 1 }`}
                                     </text>
                                 </g>
                         )
@@ -122,6 +122,10 @@ class LdaSvg extends Component<LdaSvgProps, LdaSvgState, any> {
                 }
                 {
                     this.state.data.map((item, index) => {
+                        let color: string = this.colortap[item.stack % this.colortap.length];
+                        let _r: string = (0x100 - parseInt(color.substring(1, 3), 16)).toString(16);
+                        let _g: string = (0x100 - parseInt(color.substring(3, 5), 16)).toString(16);
+                        let _b: string = (0x100 - parseInt(color.substring(5, 7), 16)).toString(16);
                         return (
                             <circle
                                 key={`lda_point_${index}`}
@@ -130,7 +134,8 @@ class LdaSvg extends Component<LdaSvgProps, LdaSvgState, any> {
                                 cx={this.fx(item.x)} cy={this.fy(item.y)} r={6}
                                 style={{
                                     opacity: 0.6,
-                                    fill: this.colortap[item.stack % this.colortap.length],
+                                    fill: color,
+                                    stroke: `#${_r}${_g}${_b}99`,
                                     strokeWidth: 1
                                 }}
                                 onMouseOver={() => {
