@@ -2,7 +2,7 @@
  * @Author: Antoine YANG 
  * @Date: 2019-09-10 10:38:15 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-09-10 17:31:38
+ * @Last Modified time: 2019-09-11 22:01:27
  */
 import React, { ChangeEvent } from 'react';
 import './bootstrap.css';
@@ -13,7 +13,6 @@ import LdaSvg, { Source } from './LdaSvg';
 import EmotionBar from './EmotionBar';
 import Cloud, {CloudRefresh} from './Cloud';
 import Distribution from './Distribution';
-import $ from 'jquery';
 
 
 let changeSelect: (event: ChangeEvent<HTMLSelectElement>) => void
@@ -21,26 +20,22 @@ let changeSelect: (event: ChangeEvent<HTMLSelectElement>) => void
 
 export var run: (year: number, source: Source, topic_amount: number) => void
     = (year: number, source: Source, topic_amount: number) => {
-        let p: Promise<{}>
-            = new Promise<{}>((resolve: (value?: {} | PromiseLike<{}> | undefined) => void, reject: (reason?: any) => void) => {
-                // 发送异步请求
-                $.ajax({
-                    type: "POST",
-                    url: "/Python/Lda.py",
-                    data: {year, source, topic_amount},
-                    dataType: "json",
-                    success: data => {
-                        resolve(data);
-                    },
-                    error: msg => {
-                        reject(msg);
-                    }
-                });
-            });
-        p.then((value: {}) => {
-            console.log("then()", value);
+        fetch('http://127.0.0.1:3001/', {
+            method:'GET',
+            // body: JSON.stringify({
+            //     year: year,
+            //     source: source,
+            //     topic_amount: topic_amount
+            // }),
+            headers: {
+                'Content-Type': 'application/json;charset=UTF-8'
+            },
+            mode: 'no-cors',
+            cache: 'default'
+        }).then((value: Response) => {
+            console.log(value);
         }).catch((reason: any) => {
-            console.error(reason);
+            console.warn(reason);
         });
     };
 
