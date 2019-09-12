@@ -2,7 +2,7 @@
  * @Author: Antoine YANG 
  * @Date: 2019-09-10 10:38:15 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-09-11 22:01:27
+ * @Last Modified time: 2019-09-12 10:44:38
  */
 import React, { ChangeEvent } from 'react';
 import './bootstrap.css';
@@ -20,7 +20,7 @@ let changeSelect: (event: ChangeEvent<HTMLSelectElement>) => void
 
 export var run: (year: number, source: Source, topic_amount: number) => void
     = (year: number, source: Source, topic_amount: number) => {
-        fetch('http://127.0.0.1:3001/', {
+        fetch('http://127.0.0.1:3001/api', {
             method:'GET',
             // body: JSON.stringify({
             //     year: year,
