@@ -2,7 +2,7 @@
  * @Author: Antoine YANG 
  * @Date: 2019-09-10 10:38:15 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-09-10 17:31:38
+ * @Last Modified time: 2019-09-12 13:58:22
  */
 import React, { ChangeEvent } from 'react';
 import './bootstrap.css';
@@ -11,37 +11,27 @@ import Textbox from './textbox';
 import Selector from './Selector';
 import LdaSvg, { Source } from './LdaSvg';
 import EmotionBar from './EmotionBar';
-import Cloud, {CloudRefresh} from './Cloud';
+import Cloud, {CloudRefresh, loadCloud} from './Cloud';
 import Distribution from './Distribution';
-import $ from 'jquery';
+import axios, { AxiosResponse } from 'axios';
 
 
 let changeSelect: (event: ChangeEvent<HTMLSelectElement>) => void
     = event => {};
 
-export var run: (year: number, source: Source, topic_amount: number) => void
-    = (year: number, source: Source, topic_amount: number) => {
-        let p: Promise<{}>
-            = new Promise<{}>((resolve: (value?: {} | PromiseLike<{}> | undefined) => void, reject: (reason?: any) => void) => {
-                // 发送异步请求
-                $.ajax({
-                    type: "POST",
-                    url: "/Python/Lda.py",
-                    data: {year, source, topic_amount},
-                    dataType: "json",
-                    success: data => {
-                        resolve(data);
-                    },
-                    error: msg => {
-                        reject(msg);
-                    }
+export var run: (year: number, source: Source, topic_amount: number) => Promise<void>
+    = async (year: number, source: Source, topic_amount: number) => {
+        await axios.get(`/run/${year}/${source === Source.市建委 ? 'sjw' : 'sjyj'}/${topic_amount}`, {
+                    headers: 'Content-type:text/html;charset=utf-8'
+                })
+                .then((value: AxiosResponse<any>) => {
+                    loadCloud(JSON.parse(value.data));
+                }, (reason: any) => {
+                    console.warn(reason);
+                })
+                .catch((reason: any) => {
+                    console.warn(reason);
                 });
-            });
-        p.then((value: {}) => {
-            console.log("then()", value);
-        }).catch((reason: any) => {
-            console.error(reason);
-        });
     };
 
 run(2018, Source.市建委, 5);

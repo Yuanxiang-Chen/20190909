@@ -2,12 +2,13 @@
  * @Author: Antoine YANG 
  * @Date: 2019-09-10 10:38:02 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-09-10 13:26:57
+ * @Last Modified time: 2019-09-12 14:05:30
  */
 import React, { Component } from 'react';
 import './bootstrap.css';
 import './style.css';
 import $ from 'jquery';
+import { ldaData } from './Distribution';
 
 export interface CloudProps {}
 
@@ -15,8 +16,10 @@ export interface CloudState {
     words: Array<{text: string, value: number}>
 }
 
-export var CloudRefresh: () => void
-    = () => void 0;
+export var CloudRefresh: () => void = () => void 0;
+
+export var loadCloud: (filedata: ldaData) => void = (filedata: ldaData) => void 0;
+
 
 class Cloud extends Component<CloudProps, CloudState, any> {
     private colortap: Array<string> = ["#FFB6C1", "#DC143C", "#A0522D", "#FF1493", "#FF00FF", "#800080", "#4B0082",
@@ -83,7 +86,32 @@ class Cloud extends Component<CloudProps, CloudState, any> {
                 words: this.state.words
             });
         };
-        
+        loadCloud = (filedata: ldaData) => {
+            let data: Array<{topic: number, words: Array<{word: string, value: number}>}> = filedata['topics'];
+            let box: Array<{word: string, value: number}> = [];
+            let max: number = 0;
+            let min: number = 1;
+            data.forEach(topic => {
+                let _use: {word: string, value: number} | null = null;
+                topic.words.forEach(word => {
+                    if (!_use || (word.value > _use!.value && word.word.length > 1)) {
+                        _use = word;
+                    }
+                });
+                box.push(_use ? _use : {word: "?", value: 0});
+            });
+            box.forEach(d => {
+                if (d.value > max) {
+                    max = d.value;
+                }
+                if (d.value < min) {
+                    min = d.value;
+                }
+            });
+            for (let i: number = 0; i < box.length; i++) {
+                box[i] = {word: box[i].word, value: (box[i].value - min) / (max - min)};
+            };
+        };
         this.setState({
             words: [
                 { text: '关键词', value: 1024 },

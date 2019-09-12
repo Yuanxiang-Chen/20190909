@@ -48,7 +48,7 @@ if __name__ == '__main__':
                                    alpha=int(sys.argv[3])/50, eta=0.01, minimum_probability=0.001,
                                    iterations=200, passes=20)
 
-    with open('../data/lda${}${}@{}.json'.format(sys.argv[3], sys.argv[1], sys.argv[2]), mode="w") as output:
+    with open('../data/lda${}${}@{}.json'.format(sys.argv[3], sys.argv[1], sys.argv[2]), mode="w", encoding="utf-8") as output:
         # 打印所有主题，每个主题显示n个词
         x = 0
         output.write('{"topics": [\n')
