@@ -2,30 +2,26 @@
  * @Author: Antoine YANG 
  * @Date: 2019-09-10 10:38:15 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-09-12 13:58:22
+ * @Last Modified time: 2019-09-13 15:04:53
  */
-import React, { ChangeEvent } from 'react';
+import React from 'react';
 import './bootstrap.css';
 import './style.css';
+import $ from 'jquery';
 import Textbox from './textbox';
 import Selector from './Selector';
-import LdaSvg, { Source } from './LdaSvg';
+import LdaSvg, { Source, setCor } from './LdaSvg';
 import EmotionBar from './EmotionBar';
 import Cloud, {CloudRefresh, loadCloud} from './Cloud';
-import Distribution from './Distribution';
+import Distribution, { importAsDistribution } from './Distribution';
 import axios, { AxiosResponse } from 'axios';
 
 
-let changeSelect: (event: ChangeEvent<HTMLSelectElement>) => void
-    = event => {};
-
-export var run: (year: number, source: Source, topic_amount: number) => Promise<void>
-    = async (year: number, source: Source, topic_amount: number) => {
-        await axios.get(`/run/${year}/${source === Source.市建委 ? 'sjw' : 'sjyj'}/${topic_amount}`, {
-                    headers: 'Content-type:text/html;charset=utf-8'
-                })
+var clearStore: () => void
+    = async () => {
+        await axios.get(`/clear`)
                 .then((value: AxiosResponse<any>) => {
-                    loadCloud(JSON.parse(value.data));
+                    console.log(value.data);
                 }, (reason: any) => {
                     console.warn(reason);
                 })
@@ -34,7 +30,48 @@ export var run: (year: number, source: Source, topic_amount: number) => Promise<
                 });
     };
 
-run(2018, Source.市建委, 5);
+clearStore();
+
+var active: () => void
+    = () => {
+        let year: number = parseInt($('#Year').val()!.toString()) + 2015;
+        let source: Source = parseInt($('#project').val()!.toString()) === 1 ? Source.市教育局 : Source.市建委;
+        if (isNaN(parseInt($('#etime').val()!.toString()))) {
+            $('#etime').val('10');
+        }
+        let topic_amount: number = parseInt($('#etime').val()!.toString());
+        // TODO: get params
+        run(year, source, topic_amount);
+    };
+
+export var run: (year: number, source: Source, topic_amount: number) => Promise<void>
+    = async (year: number, source: Source, topic_amount: number) => {
+        await axios.get(`/run/${year}/${source === Source.市建委 ? 'sjw' : 'sjyj'}/${topic_amount}`, {
+                    headers: 'Content-type:text/html;charset=utf-8'
+                })
+                .then((value: AxiosResponse<any>) => {
+                    let data: string = value.data.toString().replace('\ufeff', '');
+                    loadCloud(JSON.parse(data));
+                    importAsDistribution(JSON.parse(data));
+                    axios.get(`/tsne/${year}/${source === Source.市建委 ? 'sjw' : 'sjyj'}/${topic_amount}`, {
+                            headers: 'Content-type:text/html;charset=utf-8'
+                        })
+                        .then((value: AxiosResponse<any>) => {
+                            setCor(JSON.parse(data), {data: JSON.parse(value.data)}, source, topic_amount);
+                        }, (reason: any) => {
+                            console.warn(reason);
+                        })
+                        .catch((reason: any) => {
+                            console.warn(reason);
+                        });
+                }, (reason: any) => {
+                    console.warn(reason);
+                })
+                .catch((reason: any) => {
+                    console.warn(reason);
+                });
+    };
+    
 
 const App: React.FC = () => {
   return (
@@ -51,22 +88,20 @@ const App: React.FC = () => {
               </div>
               <div>
                   <select id="Year" style={{width: '50px', marginLeft: '10px', marginTop: '0px'}}>
-                          <option value="0">选择数据</option>
                           <option value="1" id="year2016">2016</option>
                           <option value="2" id="year2017">2017</option>
                           <option value="3" id="year2018">2018</option>
                   </select>
-                  <select id="project" onChange={changeSelect} style={{width: '50px', marginLeft: '10px', marginTop: '0px'}}>
-                      <option value="0">选择数据</option>
+                  <select id="project" style={{width: '50px', marginLeft: '10px', marginTop: '0px'}}>
                       <option value="1" id="1">市教育局</option>
                       <option value="2" id="2">市建委</option>
                   </select>
                   <Selector id="area" marginTop='0px' />
                   <Selector id="cs" marginTop='10px' />
                   <br />
-                    &nbsp;&nbsp;&nbsp;Topic:<input className="endTime" type="text" id='etime'
+                    &nbsp;&nbsp;&nbsp;Topic:<input className="endTime" type="number" max='20' min='5' id='etime' placeholder='10'
                       style={{marginLeft: '9px', width: '100px', marginTop: '5px'}} />
-                  <input type="button" value="TEST" id='btn' style={{width: '75px'}} />
+                  <input type="button" value="TEST" id='btn' style={{width: '75px'}} onClick={active} />
               </div>
 
               <div id="sent"></div>
@@ -105,7 +140,7 @@ const App: React.FC = () => {
           </div>
           <div id="cloud1" style={{height: '230px', width: '420px'}}>
               <button type="button" style={{position: 'relative', padding: '0px 5px', top: '-27px', left: '386px'}}
-                    onClick={event => {CloudRefresh()}}>
+                    onClick={() => {CloudRefresh()}}>
                 R
               </button>
               <Cloud />

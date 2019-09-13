@@ -2,7 +2,7 @@
  * @Author: Antoine YANG 
  * @Date: 2019-09-10 10:38:02 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-09-12 14:05:30
+ * @Last Modified time: 2019-09-12 18:51:40
  */
 import React, { Component } from 'react';
 import './bootstrap.css';
@@ -13,12 +13,13 @@ import { ldaData } from './Distribution';
 export interface CloudProps {}
 
 export interface CloudState {
-    words: Array<{text: string, value: number}>
+    words: Array<{word: string, value: number}>
 }
 
 export var CloudRefresh: () => void = () => void 0;
 
 export var loadCloud: (filedata: ldaData) => void = (filedata: ldaData) => void 0;
+export var drawCloud: (topic: number) => void = (topic: number) => void 0;
 
 
 class Cloud extends Component<CloudProps, CloudState, any> {
@@ -38,7 +39,7 @@ class Cloud extends Component<CloudProps, CloudState, any> {
                 maxvalue = d.value;
             }
         });
-        let words: Array<{text: string, value: number}> = this.state.words;
+        let words: Array<{word: string, value: number}> = this.state.words;
         words.sort((a, b) => {
             return a.value - b.value;
         });
@@ -48,9 +49,9 @@ class Cloud extends Component<CloudProps, CloudState, any> {
                 {
                     words.map((item, index) => {
                         let size: number = item.value / maxvalue * 16 + 20;
-                        let width: number = 408 - size * item.text.length * 1.1;
+                        let width: number = 408 - size * item.word.length * 1.1;
                         let height: number = 218 - size * 1.3;
-                        let _x: number = Math.random() * width + size * item.text.length * 0.55 + 6;
+                        let _x: number = Math.random() * width + size * item.word.length * 0.55 + 6;
                         let _y: number = Math.random() * height + size * 0.65 + 6;
                         if (index !== 0 && Math.sqrt(Math.pow(_x - 210, 2) + Math.pow(_y - 115, 2)) < Math.sqrt(index) * 10) {
                             _x = _x < 210 ? _x - index * 100 : _x + index * 100;
@@ -66,13 +67,24 @@ class Cloud extends Component<CloudProps, CloudState, any> {
                                     fontSize: size
                                 }}
                                 >
-                                { item.text }
+                                { item.word }
                             </text>
                         )
                     })
                 }
             </svg>
         );
+    }
+
+    private words: Array< Array<{word: string, value: number}> > = [];
+
+    public draw(topic: number): void {
+        if (this.words.length < topic) {
+            return;
+        }
+        this.setState({
+            words: this.words[topic]
+        });
     }
 
     public componentDidMount(): void {
@@ -88,44 +100,11 @@ class Cloud extends Component<CloudProps, CloudState, any> {
         };
         loadCloud = (filedata: ldaData) => {
             let data: Array<{topic: number, words: Array<{word: string, value: number}>}> = filedata['topics'];
-            let box: Array<{word: string, value: number}> = [];
-            let max: number = 0;
-            let min: number = 1;
             data.forEach(topic => {
-                let _use: {word: string, value: number} | null = null;
-                topic.words.forEach(word => {
-                    if (!_use || (word.value > _use!.value && word.word.length > 1)) {
-                        _use = word;
-                    }
-                });
-                box.push(_use ? _use : {word: "?", value: 0});
+                this.words.push(topic.words);
             });
-            box.forEach(d => {
-                if (d.value > max) {
-                    max = d.value;
-                }
-                if (d.value < min) {
-                    min = d.value;
-                }
-            });
-            for (let i: number = 0; i < box.length; i++) {
-                box[i] = {word: box[i].word, value: (box[i].value - min) / (max - min)};
-            };
         };
-        this.setState({
-            words: [
-                { text: '关键词', value: 1024 },
-                { text: '内容', value: 628 },
-                { text: '主题', value: 800 },
-                { text: '热词', value: 750 },
-                { text: '干扰词', value: 500 },
-                { text: '常用字', value: 800 },
-                { text: '专有名词', value: 470 },
-                { text: '细节', value: 10 },
-                { text: '值得关注的内容', value: 640 },
-                { text: '某个经常出现的字符串', value: 440 }
-            ]
-        });
+        drawCloud = this.draw.bind(this);
     }
 }
 
