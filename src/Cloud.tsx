@@ -2,13 +2,14 @@
  * @Author: Antoine YANG 
  * @Date: 2019-09-10 10:38:02 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-09-12 18:51:40
+ * @Last Modified time: 2019-09-15 12:58:02
  */
 import React, { Component } from 'react';
 import './bootstrap.css';
 import './style.css';
 import $ from 'jquery';
 import { ldaData } from './Distribution';
+import { fitWord } from './ListBox';
 
 export interface CloudProps {}
 
@@ -66,7 +67,10 @@ class Cloud extends Component<CloudProps, CloudState, any> {
                                     fill: this.colortap[index % 20],
                                     fontSize: size
                                 }}
-                                >
+                                onClick={
+                                    () => { fitWord(item.word) }
+                                }
+                            >
                                 { item.word }
                             </text>
                         )
