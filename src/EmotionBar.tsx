@@ -2,7 +2,7 @@
  * @Author: Antoine YANG 
  * @Date: 2019-09-10 10:38:05 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-09-10 11:37:05
+ * @Last Modified time: 2019-09-17 11:40:16
  */
 import React, { Component } from 'react';
 import './bootstrap.css';
@@ -13,6 +13,10 @@ export interface EmotionBarProps {}
 export interface EmotionBarState {
     data: number | null
 }
+
+export var showValue: (value: number) => void
+    = (value: number) => {};
+
 
 class EmotionBar extends Component<EmotionBarProps, EmotionBarState, any> {
     public constructor(props: EmotionBarProps) {
@@ -74,10 +78,14 @@ class EmotionBar extends Component<EmotionBarProps, EmotionBarState, any> {
         }
     }
 
-    public componentDidMount(): void {
+    private import(value: number): void {
         this.setState({
-            data: 0.8
+            data: value
         });
+    }
+
+    public componentDidMount(): void {
+        showValue = this.import.bind(this);
     }
 }
 

@@ -2,11 +2,12 @@
  * @Author: Antoine YANG 
  * @Date: 2019-09-10 13:36:37 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-09-13 14:47:20
+ * @Last Modified time: 2019-09-15 11:24:40
  */
 import React, { Component } from 'react';
 import './bootstrap.css';
 import './style.css';
+import { drawCloud } from './Cloud';
 
 
 export interface ldaData {
@@ -54,6 +55,11 @@ class Distribution extends Component<DistributionProps, DistributionState, any> 
                                     fill: this.colortap[index % 20],
                                     stroke: 'black'
                                 }}
+                                onClick = {
+                                    () => {
+                                        drawCloud(index);
+                                    }
+                                }
                             />
                         )
                     })
