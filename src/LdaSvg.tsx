@@ -2,24 +2,35 @@
  * @Author: Antoine YANG 
  * @Date: 2019-09-10 10:38:37 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-09-12 13:50:37
+ * @Last Modified time: 2019-09-17 11:40:35
  */
 import React, { Component } from 'react';
 import './bootstrap.css';
 import './style.css';
 import $ from 'jquery';
+import { ldaData } from './Distribution';
+import { drawCloud } from './Cloud';
+import { setTextByPoint } from './textbox';
+import { showValue } from './EmotionBar';
 
 export enum Source {
     市教育局, 市建委
 }
 
+export interface CorData {
+    data: Array< Array<number> >;
+}
+
 export interface LdaSvgProps {}
 
 export interface LdaSvgState {
-    data: Array<{ x: number, y: number, stack: number }>;
+    data: Array<{ x: number, y: number, stack: number, value: number }>;
     groups: number;
     source: Source | null;
 }
+
+export var setCor: (ldadata: ldaData, tsnedata: CorData, nlpdata: Array<number>, source: Source, topic_amount: number) => void
+    = (ldadata: ldaData, tsnedata: CorData, nlpdata: Array<number>, source: Source, topic_amount: number) => void 0;
 
 class LdaSvg extends Component<LdaSvgProps, LdaSvgState, any> {
     private colortap: Array<string> = ["#FFB6C1", "#DC143C", "#A0522D", "#FF1493", "#FF00FF", "#800080", "#4B0082",
@@ -73,6 +84,9 @@ class LdaSvg extends Component<LdaSvgProps, LdaSvgState, any> {
 
     public render(): JSX.Element {
         this.updateScale();
+        if (this.state.groups === 0 || this.state.data.length === 0) {
+            return (<></>);
+        }
         return (
             <svg width={1256} transform={'translate(0, 6)'} height={450} id={'tsne'} xmlns={`http://www.w3.org/2000/svg`}>
                 {
@@ -85,8 +99,8 @@ class LdaSvg extends Component<LdaSvgProps, LdaSvgState, any> {
                                         key={`lda_icon_${index}`}
                                         xmlns={`http://www.w3.org/2000/svg`}
                                         id={`lda_icon_${index}`} className={`lda_stack_icon`}
-                                        cx={30} cy={(21 * Math.sqrt(20 / this.state.groups)) * index + 24}
-                                        r={8 * Math.sqrt(20 / this.state.groups)}
+                                        cx={30} cy={(21 * 20 / this.state.groups) * index + 24}
+                                        r={8 * Math.log(24 / this.state.groups) + 4}
                                         style={{
                                             fill: item
                                         }}
@@ -100,17 +114,17 @@ class LdaSvg extends Component<LdaSvgProps, LdaSvgState, any> {
                                                     }, 600, void 0)
                                                 }, 200);
                                             });
-                                            // TODO: a.js Line 4978
+                                            drawCloud(index);
                                         }}
                                     />
                                     <text
                                         key={`lda_label_${index}`}
                                         xmlns={`http://www.w3.org/2000/svg`}
                                         id={`lda_icon_${index}`} className={`lda_stack_label`}
-                                        x={44} y={(21 * Math.sqrt(20 / this.state.groups)) * index + 24}
+                                        x={44} y={(21 * 20 / this.state.groups) * index + 24}
                                         textAnchor={'start'} dy={'0.4em'}
                                         style={{
-                                            fontSize: 13 * Math.sqrt(20 / this.state.groups),
+                                            fontSize: 13 * Math.log(24 / this.state.groups) + 2,
                                             fill: 'dark'
                                         }}
                                     >
@@ -156,18 +170,13 @@ class LdaSvg extends Component<LdaSvgProps, LdaSvgState, any> {
                                     // tooltip.style("visibility", "hidden");
                                 }}
                                 onClick={() => {
-                                    // var id = d[2].substring(2);
-                                    // if (m == 1) {
-                                    //     cloud(sjyjMAX, id, sjyjCloud);
-                                    //     show(sjyjd, id);
-                                    //     show2(0, id);
-                                    //     emotion(sjyje, id);
-                                    // } else if (m == 2) {
-                                    //     cloud(sjwMAX, id, sjwCloud);
-                                    //     show(sjwd, id);
-                                    //     show2(0, id);
-                                    //     emotion(sjwe, id);
-                                    // }
+                                    setTextByPoint(
+                                        parseInt($('#Year').val()!.toString()) + 2015,
+                                        parseInt($('#project').val()!.toString()) === 1 ? Source.市教育局 : Source.市建委,
+                                        index
+                                    );
+                                    drawCloud(item.stack);
+                                    showValue(item.value);
                                 }}
                             />
                         );
@@ -177,22 +186,33 @@ class LdaSvg extends Component<LdaSvgProps, LdaSvgState, any> {
         );
     }
 
-    public componentDidMount(): void {
-        $.getJSON('./data/2018sjyjk.json', (data: Array< {"0": number, "1": number, "k": number} >) => {
-            let set: Array<{ x: number, y: number, stack: number }> = [];
-            data.forEach(d => {
-                set.push({
-                    x: d["0"],
-                    y: d["1"],
-                    stack: d["k"]
-                });
+    public importCoordinate(ldadata: ldaData, tsnedata: CorData, nlpdata: Array<number>, source: Source, topic_amount: number): void {
+        let cors: Array<{ x: number, y: number, stack: number, value: number }> = [];
+        for (let i: number = 0; i < tsnedata.data.length && i < ldadata.distributions.length; i++) {
+            let max: number = 0;
+            let stack: number = 0;
+            ldadata.distributions[i].forEach(d => {
+                if (d.value > max) {
+                    max = d.value;
+                    stack = d.stack;
+                }
             });
-            this.setState({
-                data: set,
-                groups: 20,
-                source: Source.市教育局
+            cors.push({
+                x: tsnedata.data[i][0],
+                y: tsnedata.data[i][1],
+                stack: stack,
+                value: nlpdata[i]
             });
+        }
+        this.setState({
+            data: cors,
+            source: source,
+            groups: topic_amount
         });
+    }
+
+    public componentDidMount(): void {
+        setCor = this.importCoordinate.bind(this);
     }
 }
 

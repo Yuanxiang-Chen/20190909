@@ -28,8 +28,12 @@ stopwords = (
 
 if __name__ == '__main__':
     # 导入文本集
-    f = open("../data/origin$" + sys.argv[1] + "@" + sys.argv[2] + ".json", encoding='utf-8_sig', errors='ignore')
-    texts = json.load(f)
+    f = open("../public/data/origin$" + sys.argv[1] + "@" + sys.argv[2] + ".json",
+             encoding='utf8', errors='ignore')
+    t = f.read()
+    if t.startswith(u'\ufeff'):
+        t = t.encode('utf8')[3:].decode('utf8')
+    texts = json.loads(t)
     f.close()
 
     # 分词
@@ -48,7 +52,8 @@ if __name__ == '__main__':
                                    alpha=int(sys.argv[3])/50, eta=0.01, minimum_probability=0.001,
                                    iterations=200, passes=20)
 
-    with open('../data/lda${}${}@{}.json'.format(sys.argv[3], sys.argv[1], sys.argv[2]), mode="w", encoding="utf-8") as output:
+    with open('../public/data/lda${}${}@{}.json'.format(sys.argv[3], sys.argv[1], sys.argv[2]),
+              mode="w", encoding="utf-8") as output:
         # 打印所有主题，每个主题显示n个词
         x = 0
         output.write('{"topics": [\n')
@@ -62,7 +67,7 @@ if __name__ == '__main__':
                 _text = box[1]
                 _value = box[0]
                 flag += 1
-                if flag != 20:
+                if flag != 20 and flag < len(li):
                     output.write('{"word":' + _text + ',"value":' + _value + '},')
                 else:
                     output.write('{"word":' + _text + ',"value":' + _value + '}')
@@ -113,5 +118,5 @@ if __name__ == '__main__':
         pass
     print("\n\nExited successfully! ")
     print("\n>>> Output data in file\n\t"
-          + '../data/lda${}${}@{}.json'.format(sys.argv[3], sys.argv[1], sys.argv[2]))
+          + '../public/data/lda${}${}@{}.json'.format(sys.argv[3], sys.argv[1], sys.argv[2]))
     pass

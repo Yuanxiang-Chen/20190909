@@ -2,12 +2,12 @@
  * @Author: Antoine YANG 
  * @Date: 2019-09-10 13:36:37 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-09-10 16:39:26
+ * @Last Modified time: 2019-09-15 11:24:40
  */
 import React, { Component } from 'react';
 import './bootstrap.css';
 import './style.css';
-import $ from 'jquery';
+import { drawCloud } from './Cloud';
 
 
 export interface ldaData {
@@ -20,6 +20,8 @@ export interface DistributionProps {}
 export interface DistributionState {
     data: Array<number>;
 }
+
+export var importAsDistribution: (filedata: ldaData) => void = (filedata: ldaData) => void 0;
 
 class Distribution extends Component<DistributionProps, DistributionState, any> {
     private colortap: Array<string> = ["#FFB6C1", "#DC143C", "#A0522D", "#FF1493", "#FF00FF", "#800080", "#4B0082",
@@ -35,18 +37,29 @@ class Distribution extends Component<DistributionProps, DistributionState, any> 
 
     public render(): JSX.Element {
         let step: number = 380 / this.state.data.length;
+        let max: number = 0.1;
+        this.state.data.forEach(d => {
+            if (d > max) {
+                max = d;
+            }
+        });
         return (
             <svg width={420} height={230} id={'distribution'} xmlns={`http://www.w3.org/2000/svg`}>
                 {
                     this.state.data.map((item, index) => {
                         return (
                             <rect xmlns={`http://www.w3.org/2000/svg`} key={`topic_distri_${index}`}
-                                x = { 20 + index * step + 0.18 * step } y = { 186 - item * 160 }
-                                width = { step * 0.64 } height = { item * 160 }
+                                x = { 20 + index * step + 0.18 * step } y = { 186 - item * 150 / max }
+                                width = { step * 0.64 } height = { item * 150 / max }
                                 style = {{
                                     fill: this.colortap[index % 20],
                                     stroke: 'black'
                                 }}
+                                onClick = {
+                                    () => {
+                                        drawCloud(index);
+                                    }
+                                }
                             />
                         )
                     })
@@ -71,7 +84,7 @@ class Distribution extends Component<DistributionProps, DistributionState, any> 
                     this.state.data.map((item, index) => {
                         return (
                             <text xmlns={`http://www.w3.org/2000/svg`} key={`topic_distri_value_${index}`}
-                                x = { 20 + index * step + 0.52 * step } y = { 180 - item * 160 }
+                                x = { 20 + index * step + 0.52 * step } y = { 180 - item * 150 / max }
                                 textAnchor = { 'middle' }
                                 style = {{
                                     fill: 'black',
@@ -107,9 +120,7 @@ class Distribution extends Component<DistributionProps, DistributionState, any> 
     }
 
     public componentDidMount(): void {
-        $.getJSON('data/lda$5$2018@sjyj.json', (data: ldaData) => {
-            this.import(data);
-        });
+        importAsDistribution = this.import.bind(this);
     }
 }
 
