@@ -2,7 +2,7 @@
  * @Author: Antoine YANG 
  * @Date: 2019-09-10 10:38:51 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-09-15 13:12:22
+ * @Last Modified time: 2019-09-17 11:51:30
  */
 import React, { Component } from 'react';
 import $ from 'jquery';
@@ -45,7 +45,7 @@ class Textbox extends Component<TextboxProps, TextboxState, any> {
             <div id={this.props.id} style={{width: '100%'}}>
                 <p style={{color: 'steelblue', fontSize: '24px'}}>意见：{this.state.content}</p>
                 <br />
-                <p style={{color: 'steelblue', fontSize: '24px'}}>社会层面：{this.state.stair}</p>
+                {/* <p style={{color: 'steelblue', fontSize: '24px'}}>社会层面：{this.state.stair}</p> */}
             </div>
         );
     }

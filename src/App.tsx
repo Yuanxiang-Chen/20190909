@@ -2,20 +2,21 @@
  * @Author: Antoine YANG 
  * @Date: 2019-09-10 10:38:15 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-09-15 13:19:50
+ * @Last Modified time: 2019-09-17 12:00:23
  */
 import React from 'react';
 import './bootstrap.css';
 import './style.css';
 import $ from 'jquery';
 import Textbox, { setTextByPoint, importSentence } from './textbox';
-import Selector from './Selector';
-import LdaSvg, { Source, setCor } from './LdaSvg';
+// import Selector from './Selector';
+import LdaSvg, { Source, setCor, CorData } from './LdaSvg';
 import EmotionBar from './EmotionBar';
 import Cloud, {CloudRefresh, loadCloud} from './Cloud';
 import Distribution, { importAsDistribution } from './Distribution';
 import axios, { AxiosResponse } from 'axios';
 import ListBox from './ListBox';
+import EmotionAll, { importAsEmotionAll } from './EmotionAll';
 
 
 var clearStore: () => void
@@ -57,7 +58,55 @@ export var run: (year: number, source: Source, topic_amount: number) => Promise<
                             headers: 'Content-type:text/html;charset=utf-8'
                         })
                         .then((value: AxiosResponse<any>) => {
-                            setCor(JSON.parse(data), {data: JSON.parse(value.data)}, source, topic_amount);
+                            let tsnedata: CorData = {data: JSON.parse(value.data)};
+                            let array: Array<any> = [];
+                            axios.get(`/nlp/2016/${source === Source.市建委 ? 'sjw' : 'sjyj'}`, {
+                                headers: 'Content-type:text/html;charset=utf-8'
+                            })
+                            .then((value: AxiosResponse<any>) => {
+                                let part: Array<number> = [];
+                                (JSON.parse(value.data)).forEach((e: string) => {
+                                    part.push(parseFloat(e));
+                                });
+                                array.push(part);
+                                axios.get(`/nlp/2017/${source === Source.市建委 ? 'sjw' : 'sjyj'}`, {
+                                    headers: 'Content-type:text/html;charset=utf-8'
+                                })
+                                .then((value: AxiosResponse<any>) => {
+                                    let part: Array<number> = [];
+                                    (JSON.parse(value.data)).forEach((e: string) => {
+                                        part.push(parseFloat(e));
+                                    });
+                                    array.push(part);
+                                    axios.get(`/nlp/2018/${source === Source.市建委 ? 'sjw' : 'sjyj'}`, {
+                                        headers: 'Content-type:text/html;charset=utf-8'
+                                    })
+                                    .then((value: AxiosResponse<any>) => {
+                                        let part: Array<number> = [];
+                                        (JSON.parse(value.data)).forEach((e: string) => {
+                                            part.push(parseFloat(e));
+                                        });
+                                        array.push(part);
+                                        setCor(JSON.parse(data), tsnedata, array[year - 2016], source, topic_amount);
+                                        importAsEmotionAll(array);
+                                    }, (reason: any) => {
+                                        console.warn(reason);
+                                    })
+                                    .catch((reason: any) => {
+                                        console.warn(reason);
+                                    });
+                                }, (reason: any) => {
+                                    console.warn(reason);
+                                })
+                                .catch((reason: any) => {
+                                    console.warn(reason);
+                                });
+                            }, (reason: any) => {
+                                console.warn(reason);
+                            })
+                            .catch((reason: any) => {
+                                console.warn(reason);
+                            });
                         }, (reason: any) => {
                             console.warn(reason);
                         })
@@ -88,17 +137,17 @@ const App: React.FC = () => {
                     </h1>
                 </div>
                 <div>
-                    <select id="Year" style={{width: '50px', marginLeft: '10px', marginTop: '0px'}}>
+                    <select id="Year" style={{width: '80px', marginLeft: '10px', marginTop: '0px'}}>
                             <option value="1" id="year2016">2016</option>
                             <option value="2" id="year2017">2017</option>
                             <option value="3" id="year2018">2018</option>
                     </select>
-                    <select id="project" style={{width: '50px', marginLeft: '10px', marginTop: '0px'}}>
+                    <select id="project" style={{width: '100px', marginLeft: '10px', marginTop: '0px'}}>
                         <option value="1" id="1">市教育局</option>
                         <option value="2" id="2">市建委</option>
                     </select>
-                    <Selector id="area" marginTop='0px' />
-                    <Selector id="cs" marginTop='10px' />
+                    {/* <Selector id="area" marginTop='0px' />
+                    <Selector id="cs" marginTop='10px' /> */}
                     <br />
                         &nbsp;&nbsp;&nbsp;Topic:
                         <input className="endTime" type="number" max='20' min='5' id='etime' placeholder='10'
@@ -163,11 +212,13 @@ const App: React.FC = () => {
             <div className="panell-heading">
                 Extra
             </div>
-            <div id="extraDiv" style={{height: '230px', width: '420px'}}></div>
+            <div id="extraDiv" style={{height: '230px', width: '420px'}}>
+                <EmotionAll />
+            </div>
         </div>
         </>
     );
-    }
+}
     
     export default App;
     

@@ -2,7 +2,7 @@
  * @Author: Antoine YANG 
  * @Date: 2019-09-10 10:38:37 
  * @Last Modified by: Antoine YANG
- * @Last Modified time: 2019-09-15 13:19:05
+ * @Last Modified time: 2019-09-17 11:40:35
  */
 import React, { Component } from 'react';
 import './bootstrap.css';
@@ -11,6 +11,7 @@ import $ from 'jquery';
 import { ldaData } from './Distribution';
 import { drawCloud } from './Cloud';
 import { setTextByPoint } from './textbox';
+import { showValue } from './EmotionBar';
 
 export enum Source {
     市教育局, 市建委
@@ -23,13 +24,13 @@ export interface CorData {
 export interface LdaSvgProps {}
 
 export interface LdaSvgState {
-    data: Array<{ x: number, y: number, stack: number }>;
+    data: Array<{ x: number, y: number, stack: number, value: number }>;
     groups: number;
     source: Source | null;
 }
 
-export var setCor: (ldadata: ldaData, tsnedata: CorData, source: Source, topic_amount: number) => void
-    = (ldadata: ldaData, tsnedata: CorData, source: Source, topic_amount: number) => void 0;
+export var setCor: (ldadata: ldaData, tsnedata: CorData, nlpdata: Array<number>, source: Source, topic_amount: number) => void
+    = (ldadata: ldaData, tsnedata: CorData, nlpdata: Array<number>, source: Source, topic_amount: number) => void 0;
 
 class LdaSvg extends Component<LdaSvgProps, LdaSvgState, any> {
     private colortap: Array<string> = ["#FFB6C1", "#DC143C", "#A0522D", "#FF1493", "#FF00FF", "#800080", "#4B0082",
@@ -175,6 +176,7 @@ class LdaSvg extends Component<LdaSvgProps, LdaSvgState, any> {
                                         index
                                     );
                                     drawCloud(item.stack);
+                                    showValue(item.value);
                                 }}
                             />
                         );
@@ -184,8 +186,8 @@ class LdaSvg extends Component<LdaSvgProps, LdaSvgState, any> {
         );
     }
 
-    public importCoordinate(ldadata: ldaData, tsnedata: CorData, source: Source, topic_amount: number): void {
-        let cors: Array<{ x: number, y: number, stack: number }> = [];
+    public importCoordinate(ldadata: ldaData, tsnedata: CorData, nlpdata: Array<number>, source: Source, topic_amount: number): void {
+        let cors: Array<{ x: number, y: number, stack: number, value: number }> = [];
         for (let i: number = 0; i < tsnedata.data.length && i < ldadata.distributions.length; i++) {
             let max: number = 0;
             let stack: number = 0;
@@ -198,7 +200,8 @@ class LdaSvg extends Component<LdaSvgProps, LdaSvgState, any> {
             cors.push({
                 x: tsnedata.data[i][0],
                 y: tsnedata.data[i][1],
-                stack: stack
+                stack: stack,
+                value: nlpdata[i]
             });
         }
         this.setState({
